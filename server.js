@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const { spec } = require("./swagger");
 const { users } = require("./data");
 const {
   basicAuth,
@@ -14,6 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // OAuth2 token endpoint uses form data
 
 const PORT = process.env.PORT || 3000;
+
+// Swagger UI - interactive docs at /docs
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(spec));
 
 // Health check
 app.get("/", (req, res) => {
