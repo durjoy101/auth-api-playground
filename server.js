@@ -1,7 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const { users } = require("./data");
-const { basicAuth, apiKeyAuth } = require("./auth");
+const {
+  basicAuth,
+  apiKeyAuth,
+  jwtAuth,
+  signToken,
+  verifyCredentials,
+} = require("./auth");
 
 const app = express();
 app.use(express.json());
@@ -40,6 +46,30 @@ app.get("/apikey", apiKeyAuth, (req, res) => {
 // API Key protected POST - echoes the JSON body back
 app.post("/apikey", apiKeyAuth, (req, res) => {
   res.json({ message: "API key OK (POST)", received: req.body });
+});
+
+// JWT login - body: { username, password } -> returns a token
+app.post("/login", (req, res) => {
+  const { username, password } = req.body || {};
+  const user = verifyCredentials(username, password);
+  if (!user) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+  res.json({ token: signToken(user.username) });
+});
+
+// JWT Bearer protected
+app.get("/jwt", jwtAuth, (req, res) => {
+  res.json({ message: "JWT OK", user: req.user.username });
+});
+
+// JWT Bearer protected POST - echoes the JSON body back
+app.post("/jwt", jwtAuth, (req, res) => {
+  res.json({
+    message: "JWT OK (POST)",
+    user: req.user.username,
+    received: req.body,
+  });
 });
 
 app.listen(PORT, () => {
