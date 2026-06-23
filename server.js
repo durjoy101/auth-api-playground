@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const { users } = require("./data");
-const { basicAuth } = require("./auth");
+const { basicAuth, apiKeyAuth } = require("./auth");
 
 const app = express();
 app.use(express.json());
@@ -30,6 +30,16 @@ app.post("/basic", basicAuth, (req, res) => {
     user: req.user.username,
     received: req.body,
   });
+});
+
+// API Key protected
+app.get("/apikey", apiKeyAuth, (req, res) => {
+  res.json({ message: "API key OK" });
+});
+
+// API Key protected POST - echoes the JSON body back
+app.post("/apikey", apiKeyAuth, (req, res) => {
+  res.json({ message: "API key OK (POST)", received: req.body });
 });
 
 app.listen(PORT, () => {
